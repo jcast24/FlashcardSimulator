@@ -4,7 +4,7 @@ class Program
 {
     static void Main(string[] args)
     {
-        UserInterface ui = new UserInterface();
-        ui.MainMenu();
+        DataAccess db = new DataAccess();
+        db.CreateTables();
     }
 }
