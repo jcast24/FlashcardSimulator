@@ -20,7 +20,7 @@ public class UserInterface()
             switch (choice)
             {
                 case Menu.StacksMenu:
-                    Console.Write("This goes to the stacks menu");
+                    MenuStack();
                     break;
                 case Menu.FlashcardMenu:
                     Console.Write("List all stacks method goes here");
@@ -70,4 +70,6 @@ public class UserInterface()
             }
         }
     }
+
+    // Add flashcard menu
 }
