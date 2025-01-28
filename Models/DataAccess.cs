@@ -63,7 +63,36 @@ public class DataAccess
         {
             string insertQuery = @"INSERT INTO Stacks (Name) VALUES (@Name)";
             conn.Execute(insertQuery, new Stack {Name = stackName});
-            AnsiConsole.Write("Successfully created");
+            AnsiConsole.WriteLine("Successfully created");
+        }
+
+        AnsiConsole.MarkupLine("Press any key to continue!");
+        Console.ReadKey();
+    }
+
+    internal IEnumerable<Stack> ListAllStacks()
+    {
+        try {
+            using(var conn = new SqlConnection(ConnectionString)) 
+            {
+                conn.Open();
+
+                string selectQuery = "SELECT * FROM Stacks";
+
+                var records = conn.Query<Stack>(selectQuery).ToList();
+                
+                // Create this into a table
+                foreach(var record in records)
+                {
+                    Console.WriteLine($"{record.Id} {record.Name}");
+                }
+
+                return records;
+            }
+
+        } catch (Exception ex){
+            Console.WriteLine($"There was a problem retrieving stacks: {ex.Message}");
+            return new List<Stack>();
         }
     }
 }
