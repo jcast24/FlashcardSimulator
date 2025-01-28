@@ -1,6 +1,8 @@
 using Dapper;
+using Spectre.Console;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
+
 
 namespace FlashcardSimulator;
 
@@ -48,12 +50,20 @@ public class DataAccess
                     );";
 
                 conn.Execute(createFlashCardTableSql);
-                Console.WriteLine("Connection successful!");
             }
         } catch (Exception ex) {
             Console.WriteLine($"Error: {ex.Message}");
         }
     }
 
-
+    internal void CreateNewStack()
+    {
+        string stackName = AnsiConsole.Ask<string>("Enter the name of the stack");
+        using (var conn = new SqlConnection(ConnectionString))
+        {
+            string insertQuery = @"INSERT INTO Stacks (Name) VALUES (@Name)";
+            conn.Execute(insertQuery, new Stack {Name = stackName});
+            AnsiConsole.Write("Successfully created");
+        }
+    }
 }
