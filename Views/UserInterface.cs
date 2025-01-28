@@ -23,7 +23,7 @@ public class UserInterface()
                     MenuStack();
                     break;
                 case Menu.FlashcardMenu:
-                    Console.Write("List all stacks method goes here");
+                    MenuFlashcard();
                     break;
                 case Menu.Quit:
                     Console.Write("Goodbye!");
@@ -53,23 +53,49 @@ public class UserInterface()
                     )
             );
 
-            switch(choice)
+            switch (choice)
             {
                 case StacksMenu.ManageAllStacks:
-                    Console.Write("List all the stacks here");
-                    break;
+                    throw new NotImplementedException();
                 case StacksMenu.CreateNewStack:
-                    Console.Write("Add method to create a new stack, once a new stack is made ask to create a new flashcard");
-                    break;
+                    throw new NotImplementedException();
                 case StacksMenu.DeleteStack:
-                    Console.Write("Delete stack by name");
-                    break;
+                    throw new NotImplementedException();
                 default:
-                    Console.Write("Please choose the correct option!");
-                    break;
+                    throw new NotImplementedException();
             }
         }
     }
 
     // Add flashcard menu
+    internal static void MenuFlashcard()
+    {
+        Console.Clear();
+        bool isRunning = true;
+
+        while (isRunning)
+        {
+            var choice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .Title("Flashcard menu!")
+                    .AddChoices(
+                        FlashcardMenu.CreateNewFlashcard,
+                        FlashcardMenu.UpdateFlashcard,
+                        FlashcardMenu.DeleteFlashcard
+                    )
+            );
+
+            switch(choice)
+            {
+                case FlashcardMenu.CreateNewFlashcard:
+                    throw new NotImplementedException();
+                case FlashcardMenu.UpdateFlashcard:
+                    throw new NotImplementedException();
+                case FlashcardMenu.DeleteFlashcard:
+                    throw new NotImplementedException();
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+    }
 }
