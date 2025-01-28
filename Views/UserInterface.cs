@@ -47,7 +47,6 @@ public class UserInterface()
         {
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
-                    .Title("Stacks menu!")
                     .AddChoices(
                         StacksMenu.ManageAllStacks,
                         StacksMenu.CreateNewStack,
@@ -58,7 +57,8 @@ public class UserInterface()
             switch (choice)
             {
                 case StacksMenu.ManageAllStacks:
-                    throw new NotImplementedException();
+                    data.ListAllStacks();
+                    break;
                 case StacksMenu.CreateNewStack:
                     data.CreateNewStack();
                     break;
@@ -80,7 +80,6 @@ public class UserInterface()
         {
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
-                    .Title("Flashcard menu!")
                     .AddChoices(
                         FlashcardMenu.CreateNewFlashcard,
                         FlashcardMenu.UpdateFlashcard,
