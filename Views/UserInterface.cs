@@ -39,6 +39,8 @@ public class UserInterface()
     internal static void MenuStack()
     {
         Console.Clear();
+        
+        DataAccess data = new DataAccess();
 
         bool isRunning = true;
         while (isRunning)
@@ -58,7 +60,8 @@ public class UserInterface()
                 case StacksMenu.ManageAllStacks:
                     throw new NotImplementedException();
                 case StacksMenu.CreateNewStack:
-                    throw new NotImplementedException();
+                    data.CreateNewStack();
+                    break;
                 case StacksMenu.DeleteStack:
                     throw new NotImplementedException();
                 default:
