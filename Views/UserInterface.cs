@@ -63,7 +63,8 @@ public class UserInterface()
                     data.CreateNewStack();
                     break;
                 case StacksMenu.DeleteStack:
-                    throw new NotImplementedException();
+                    data.DeleteStack();
+                    break;
                 default:
                     throw new NotImplementedException();
             }
