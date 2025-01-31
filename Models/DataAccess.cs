@@ -1,16 +1,13 @@
 using Dapper;
-using Spectre.Console;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
-
+using Spectre.Console;
 
 namespace FlashcardSimulator;
 
 public class DataAccess
 {
-    IConfiguration config = new ConfigurationBuilder()
-        .AddJsonFile("appsettings.json")
-        .Build();
+    IConfiguration config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
 
     private string? ConnectionString;
 
@@ -19,7 +16,7 @@ public class DataAccess
         ConnectionString = config.GetSection("ConnectionStrings")["DefaultConnection"];
     }
 
-    internal void CreateTables() 
+    internal void CreateTables()
     {
         try
         {
@@ -27,13 +24,14 @@ public class DataAccess
             {
                 conn.Open();
 
-                string createStackTableSql = 
+                string createStackTableSql =
                     @"IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Stacks')
                     CREATE TABLE Stacks (
                             Id int IDENTITY(1,1) NOT NULL,
                             Name NVARCHAR(30) NOT NULL UNIQUE,
                             PRIMARY KEY (Id)
-                            );";
+                            );
+                ";
                 conn.Execute(createStackTableSql);
 
                 string createFlashCardTableSql =
@@ -51,7 +49,9 @@ public class DataAccess
 
                 conn.Execute(createFlashCardTableSql);
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             Console.WriteLine($"Error: {ex.Message}");
         }
     }
@@ -62,8 +62,27 @@ public class DataAccess
         using (var conn = new SqlConnection(ConnectionString))
         {
             string insertQuery = @"INSERT INTO Stacks (Name) VALUES (@Name)";
-            conn.Execute(insertQuery, new Stack {Name = stackName});
+            conn.Execute(insertQuery, new Stack { Name = stackName });
             AnsiConsole.WriteLine("Successfully created");
+        }
+
+        AnsiConsole.MarkupLine("Press any key to continue!");
+        Console.ReadKey();
+    }
+
+    internal void DeleteStack()
+    {
+        ListAllStacks();
+        Console.WriteLine("");
+        string stackName = AnsiConsole.Ask<string>(
+            "Enter the name of the stack that you want to delete: "
+        );
+        using (var conn = new SqlConnection(ConnectionString))
+        {
+            string deleteQuery = @"DELETE FROM Stacks WHERE Name = @Name";
+            conn.Execute(deleteQuery, new { Name = stackName });
+            AnsiConsole.WriteLine("Item has been deleted.");
+            ListAllStacks();
         }
 
         AnsiConsole.MarkupLine("Press any key to continue!");
@@ -72,25 +91,30 @@ public class DataAccess
 
     internal IEnumerable<Stack> ListAllStacks()
     {
-        try {
-            using(var conn = new SqlConnection(ConnectionString)) 
+        try
+        {
+            using (var conn = new SqlConnection(ConnectionString))
             {
                 conn.Open();
 
                 string selectQuery = "SELECT * FROM Stacks ORDER BY Id";
 
                 var records = conn.Query<Stack>(selectQuery).ToList();
-                
+
+                Console.WriteLine("");
                 // Create this into a table
-                foreach(var record in records)
+                foreach (var record in records)
                 {
                     Console.WriteLine($"{record.Id} {record.Name}");
                 }
 
+                Console.WriteLine("");
+
                 return records;
             }
-
-        } catch (Exception ex){
+        }
+        catch (Exception ex)
+        {
             Console.WriteLine($"There was a problem retrieving stacks: {ex.Message}");
             return new List<Stack>();
         }
