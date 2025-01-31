@@ -77,7 +77,7 @@ public class DataAccess
             {
                 conn.Open();
 
-                string selectQuery = "SELECT * FROM Stacks";
+                string selectQuery = "SELECT * FROM Stacks ORDER BY Id";
 
                 var records = conn.Query<Stack>(selectQuery).ToList();
                 
