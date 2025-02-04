@@ -75,13 +75,13 @@ public class DataAccess
 
     internal void DeleteStack()
     {
-        int stackName = AnsiConsole.Ask<int>(
+        string stackName = AnsiConsole.Ask<string>(
             "Enter the name of the stack that you want to delete: "
         );
         using (var conn = new SqlConnection(ConnectionString))
         {
-            string deleteQuery = @"DELETE FROM Stacks WHERE Id = @Id";
-            conn.Execute(deleteQuery, new { Id = stackName });
+            string deleteQuery = @"DELETE FROM Stacks WHERE Name = @Name";
+            conn.Execute(deleteQuery, new { Name = stackName });
 
             string checkIfEmptyQuery = "SELECT COUNT(*) FROM Stacks";
 
@@ -116,7 +116,7 @@ public class DataAccess
                 // Create this into a table
                 foreach (var record in records)
                 {
-                    Console.WriteLine($"{record.Id} {record.Name}");
+                    Console.WriteLine($"{record.Name}");
                 }
 
                 Console.WriteLine("");
