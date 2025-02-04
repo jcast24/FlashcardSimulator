@@ -58,12 +58,14 @@ public class DataAccess
 
     internal void CreateNewStack()
     {
-        string stackName = AnsiConsole.Ask<string>("Enter the name of the stack");
+        Stack stack = new();
+
+        stack.Name = AnsiConsole.Ask<string>("Enter the name of the stack: ");
 
         using (var conn = new SqlConnection(ConnectionString))
         {
             string insertQuery = @"INSERT INTO Stacks (Name) VALUES (@Name)";
-            conn.Execute(insertQuery, new Stack { Name = stackName });
+            conn.Execute(insertQuery, new { stack.Name });
             AnsiConsole.WriteLine("Successfully created");
         }
 
@@ -73,13 +75,13 @@ public class DataAccess
 
     internal void DeleteStack()
     {
-        string stackName = AnsiConsole.Ask<string>(
+        int stackName = AnsiConsole.Ask<int>(
             "Enter the name of the stack that you want to delete: "
         );
         using (var conn = new SqlConnection(ConnectionString))
         {
-            string deleteQuery = @"DELETE FROM Stacks WHERE Name = @Name";
-            conn.Execute(deleteQuery, new { Name = stackName });
+            string deleteQuery = @"DELETE FROM Stacks WHERE Id = @Id";
+            conn.Execute(deleteQuery, new { Id = stackName });
 
             string checkIfEmptyQuery = "SELECT COUNT(*) FROM Stacks";
 
