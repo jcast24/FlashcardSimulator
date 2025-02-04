@@ -100,34 +100,24 @@ public class DataAccess
         Console.ReadKey();
     }
 
-    internal IEnumerable<Stack> ListAllStacks()
+    internal void ListAllStacks()
     {
         try
         {
             using (var conn = new SqlConnection(ConnectionString))
             {
                 conn.Open();
-
-                string selectQuery = "SELECT * FROM Stacks ORDER BY Id";
+                string selectQuery = "SELECT * FROM Stacks";
 
                 var records = conn.Query<Stack>(selectQuery).ToList();
 
-                Console.WriteLine("");
-                // Create this into a table
-                foreach (var record in records)
+                foreach(var item in records)
                 {
-                    Console.WriteLine($"{record.Name}");
+                    Console.WriteLine($"{item.Name}");
                 }
-
-                Console.WriteLine("");
-
-                return records;
             }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"There was a problem retrieving stacks: {ex.Message}");
-            return new List<Stack>();
+        } catch (Exception ex) {
+            Console.WriteLine($"{ex.Message}");
         }
     }
 }
