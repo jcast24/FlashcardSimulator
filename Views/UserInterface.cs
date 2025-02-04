@@ -50,7 +50,8 @@ public class UserInterface()
                     .AddChoices(
                         StacksMenu.ManageAllStacks,
                         StacksMenu.CreateNewStack,
-                        StacksMenu.DeleteStack
+                        StacksMenu.DeleteStack,
+                        StacksMenu.ReturnToMenu
                     )
             );
 
@@ -64,6 +65,9 @@ public class UserInterface()
                     break;
                 case StacksMenu.DeleteStack:
                     data.DeleteStack();
+                    break;
+                case StacksMenu.ReturnToMenu:
+                    isRunning = false;
                     break;
                 default:
                     throw new NotImplementedException();
