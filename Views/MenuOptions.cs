@@ -13,6 +13,7 @@ internal struct StacksMenu
     public const string CreateNewStack = "Create new stack";
     public const string ManageAllStacks = "List all Stacks";
     public const string DeleteStack = "Delete Stack";
+    public const string ReturnToMenu = "Return to Main Menu";
 }
 
 internal struct FlashcardMenu
