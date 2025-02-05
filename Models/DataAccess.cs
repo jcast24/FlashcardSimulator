@@ -100,23 +100,84 @@ public class DataAccess
         Console.ReadKey();
     }
 
-    internal void ListAllStacks()
+    internal List<Stack> ListAllStacks()
     {
         try
         {
             using (var conn = new SqlConnection(ConnectionString))
             {
                 conn.Open();
-                string selectQuery = "SELECT * FROM Stacks";
+                string selectQuery = "SELECT * FROM Stacks ORDER BY Id";
 
                 var records = conn.Query<Stack>(selectQuery).ToList();
 
-                foreach(var item in records)
+                foreach (var item in records)
                 {
-                    Console.WriteLine($"{item.Name}");
+                    Console.WriteLine($"{item.Id} - {item.Name}");
                 }
+                return records;
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"{ex.Message}");
+            return new List<Stack>();
+        }
+    }
+
+    // Change this, choose the stack by stack name, not by the Id of the stack
+    private static int ChooseStack()
+    {
+        var dataAccess = new DataAccess();
+
+        var stacks = dataAccess.ListAllStacks();
+        var stacksArray = stacks.Select(x => x.Name).ToArray();
+
+        var option = AnsiConsole.Prompt(
+            new SelectionPrompt<string>().Title("Choose a stack: ").AddChoices(stacksArray)
+        );
+        var stackId = stacks.Single(x => x.Name == option).Id;
+        return stackId;
+    }
+
+    internal void CreateAFlashcard()
+    {
+        // List all the stacks
+        // choose which stack based off of ID
+        Flashcard flashcard = new();
+        
+        // Connect the stackID from Stack model to Flashcard model
+        flashcard.StackId = ChooseStack();
+        flashcard.Question = AnsiConsole.Ask<string>("Enter your question: ");
+        flashcard.Answer = AnsiConsole.Ask<string>("Enter your answer: ");
+
+        DataAccess data = new DataAccess();
+        data.InsertFlashcardIntoStack(flashcard);
+    }
+
+    internal void InsertFlashcardIntoStack(Flashcard flashcard)
+    {
+        try
+        {
+            using (var conn = new SqlConnection(ConnectionString))
+            {
+                conn.Open();
+
+                string insertFlashcardQuery =
+                    @"INSERT INTO Flashcards (Question, Answer, StackId) VALUES (@Question, @Answer, @StackId)";
+                conn.Execute(
+                    insertFlashcardQuery,
+                    new
+                    {
+                        flashcard.Question,
+                        flashcard.Answer,
+                        flashcard.StackId,
+                    }
+                );
+            }
+        }
+        catch (Exception ex)
+        {
             Console.WriteLine($"{ex.Message}");
         }
     }
