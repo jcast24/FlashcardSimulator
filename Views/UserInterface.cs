@@ -104,8 +104,12 @@ public class UserInterface()
                     throw new NotImplementedException();
                 case FlashcardMenu.DeleteFlashcard:
                     throw new NotImplementedException();
+                case FlashcardMenu.ListAllFlashcards:
+                    data.ListAllFlashcards();
+                    break;
                 case FlashcardMenu.ReturnToMenu:
-                    throw new NotImplementedException();
+                    isRunning = false;
+                    break;
                 default:
                     throw new NotImplementedException();
             }
