@@ -88,7 +88,8 @@ public class UserInterface()
                     .AddChoices(
                         FlashcardMenu.CreateNewFlashcard,
                         FlashcardMenu.UpdateFlashcard,
-                        FlashcardMenu.DeleteFlashcard
+                        FlashcardMenu.DeleteFlashcard,
+                        FlashcardMenu.ReturnToMenu
                     )
             );
 
@@ -99,6 +100,8 @@ public class UserInterface()
                 case FlashcardMenu.UpdateFlashcard:
                     throw new NotImplementedException();
                 case FlashcardMenu.DeleteFlashcard:
+                    throw new NotImplementedException();
+                case FlashcardMenu.ReturnToMenu:
                     throw new NotImplementedException();
                 default:
                     throw new NotImplementedException();
