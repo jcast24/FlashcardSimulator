@@ -181,4 +181,9 @@ public class DataAccess
             Console.WriteLine($"{ex.Message}");
         }
     }
+
+    internal void ListAllFlashcards()
+    {
+        throw new NotImplementedException();
+    }
 }

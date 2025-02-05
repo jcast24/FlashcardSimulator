@@ -90,6 +90,7 @@ public class UserInterface()
                         FlashcardMenu.CreateNewFlashcard,
                         FlashcardMenu.UpdateFlashcard,
                         FlashcardMenu.DeleteFlashcard,
+                        FlashcardMenu.ListAllFlashcards,
                         FlashcardMenu.ReturnToMenu
                     )
             );

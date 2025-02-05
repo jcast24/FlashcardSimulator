@@ -21,5 +21,6 @@ internal struct FlashcardMenu
     public const string CreateNewFlashcard = "Create new flashcard";
     public const string UpdateFlashcard = "Update existing flashcard";
     public const string DeleteFlashcard = "Delete Flashcard";
+    public const string ListAllFlashcards = "List all Flashcards";
     public const string ReturnToMenu = "Return to Main Menu";
 }
