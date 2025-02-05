@@ -184,6 +184,23 @@ public class DataAccess
 
     internal void ListAllFlashcards()
     {
-        throw new NotImplementedException();
+        try {
+            using(var conn = new SqlConnection(ConnectionString))
+            {
+                conn.Open();
+
+                string listFlashcardsQuery = "SELECT * FROM Flashcards";
+                
+                var records = conn.Query<Flashcard>(listFlashcardsQuery).ToList();
+
+                foreach (var item in records)
+                {
+                    Console.WriteLine($"{item.StackId} - {item.Id} - {item.Question} - {item.Answer}");
+                }
+            }
+        } catch (Exception ex)
+        {
+            Console.WriteLine($"{ex.Message}");
+        }
     }
 }
