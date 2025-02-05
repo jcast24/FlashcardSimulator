@@ -80,6 +80,7 @@ public class UserInterface()
     {
         Console.Clear();
         bool isRunning = true;
+        DataAccess data = new DataAccess();
 
         while (isRunning)
         {
@@ -96,7 +97,8 @@ public class UserInterface()
             switch(choice)
             {
                 case FlashcardMenu.CreateNewFlashcard:
-                    throw new NotImplementedException();
+                    data.CreateAFlashcard();
+                    break;
                 case FlashcardMenu.UpdateFlashcard:
                     throw new NotImplementedException();
                 case FlashcardMenu.DeleteFlashcard:
