@@ -237,7 +237,7 @@ public class DataAccess
                 foreach (var item in records)
                 {
                     Console.WriteLine(
-                        $"{item.StackName} - {item.Id} - {item.Question} - {item.Answer}"
+                        $"{item.StackName} - {item.FlashcardId} - {item.Question} - {item.Answer}"
                     );
                 }
             }
