@@ -48,6 +48,20 @@ public class DataAccess
                     );";
 
                 conn.Execute(createFlashCardTableSql);
+
+                string createFlashcardViewTable =
+                    @"
+                    CREATE VIEW FlashcardView AS 
+                    SELECT
+                        f.Id AS FlashcardId,
+                        f.Question,
+                        f.Answer,
+                        f.StackId,
+                        s.Name AS StackName
+                    From Flashcards f 
+                    JOIN Stacks s ON f.StackId = s.Id;
+                    ";
+                conn.Execute(createFlashcardViewTable);
             }
         }
         catch (Exception ex)
@@ -126,7 +140,8 @@ public class DataAccess
     }
 
     // Change this, choose the stack by stack name, not by the Id of the stack
-    private static int ChooseStack()
+    // Do this because we want to show the stack name when we show all the flashcards
+    private static int ChooseStackById()
     {
         var dataAccess = new DataAccess();
 
@@ -140,14 +155,38 @@ public class DataAccess
         return stackId;
     }
 
+    // has to return a string
+    internal string GetFlashcardsWithStackNames()
+    {
+        try
+        {
+            using (var conn = new SqlConnection(ConnectionString))
+            {
+                string sql =
+                    "SELECT FlashcardId as Id, Question, Answer, StackName FROM FlashcardView;";
+                var records = conn.Query<FlashcardDTO>(sql).ToList();
+
+                foreach (var rec in records)
+                {
+                    return $"{rec.StackName}";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            AnsiConsole.Write($"[red]{ex.Message}[/]");
+        }
+        return "Not found";
+    }
+
     internal void CreateAFlashcard()
     {
         // List all the stacks
         // choose which stack based off of ID
         Flashcard flashcard = new();
-        
+
         // Connect the stackID from Stack model to Flashcard model
-        flashcard.StackId = ChooseStack();
+        flashcard.StackId = ChooseStackById();
         flashcard.Question = AnsiConsole.Ask<string>("Enter your question: ");
         flashcard.Answer = AnsiConsole.Ask<string>("Enter your answer: ");
 
@@ -155,6 +194,7 @@ public class DataAccess
         data.InsertFlashcardIntoStack(flashcard);
     }
 
+    // Instead of stackId, should be better to use the name of the stack.
     internal void InsertFlashcardIntoStack(Flashcard flashcard)
     {
         try
@@ -184,21 +224,25 @@ public class DataAccess
 
     internal void ListAllFlashcards()
     {
-        try {
-            using(var conn = new SqlConnection(ConnectionString))
+        try
+        {
+            using (var conn = new SqlConnection(ConnectionString))
             {
                 conn.Open();
 
-                string listFlashcardsQuery = "SELECT * FROM Flashcards";
-                
-                var records = conn.Query<Flashcard>(listFlashcardsQuery).ToList();
+                string listFlashcardsQuery = "SELECT * FROM FlashcardView";
+
+                var records = conn.Query<FlashcardDTO>(listFlashcardsQuery).ToList();
 
                 foreach (var item in records)
                 {
-                    Console.WriteLine($"{item.StackId} - {item.Id} - {item.Question} - {item.Answer}");
+                    Console.WriteLine(
+                        $"{item.StackName} - {item.Id} - {item.Question} - {item.Answer}"
+                    );
                 }
             }
-        } catch (Exception ex)
+        }
+        catch (Exception ex)
         {
             Console.WriteLine($"{ex.Message}");
         }
