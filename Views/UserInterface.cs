@@ -106,6 +106,7 @@ public class UserInterface()
                     throw new NotImplementedException();
                 case FlashcardMenu.ListAllFlashcards:
                     data.ListAllFlashcards();
+                    // data.GetFlashcardsWithStackNames();
                     break;
                 case FlashcardMenu.ReturnToMenu:
                     isRunning = false;
