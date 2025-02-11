@@ -103,7 +103,8 @@ public class UserInterface()
                 case FlashcardMenu.UpdateFlashcard:
                     throw new NotImplementedException();
                 case FlashcardMenu.DeleteFlashcard:
-                    throw new NotImplementedException();
+                    data.DeleteAFlashcard();
+                    break;
                 case FlashcardMenu.ListAllFlashcards:
                     data.ListAllFlashcards();
                     // data.GetFlashcardsWithStackNames();
