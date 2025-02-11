@@ -222,6 +222,27 @@ public class DataAccess
         }
     }
 
+    internal void DeleteAFlashcard()
+    {
+        try {
+            using (var conn = new SqlConnection(ConnectionString))
+            {
+                ListAllFlashcards();
+                conn.Open();
+
+                string getId = AnsiConsole.Ask<string>("Enter the Id of the flashcard you would like to delete: ");
+                string deleteQuery = "DELETE FROM Flashcards WHERE Id=@Id";
+                conn.Execute(deleteQuery, new {Id = getId});
+                AnsiConsole.MarkupLine($"[green]Item Id: {getId} has been successfully deleted![/]");
+
+                ListAllFlashcards();
+            }
+        } catch (Exception ex)
+        {
+            AnsiConsole.MarkupLine($"[red]{ex.Message}[/]");
+        }
+    }
+
     internal void ListAllFlashcards()
     {
         try
