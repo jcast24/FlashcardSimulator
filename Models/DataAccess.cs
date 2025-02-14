@@ -125,9 +125,14 @@ public class DataAccess
 
                 var records = conn.Query<Stack>(selectQuery).ToList();
 
+                if (records.Count == 0)
+                {
+                    AnsiConsole.MarkupLine("[red]No stacks exists, please create one! [/]");
+                }
+
                 foreach (var item in records)
                 {
-                    Console.WriteLine($"{item.Id} - {item.Name}");
+                    Console.WriteLine($"{item.Name}");
                 }
                 return records;
             }
@@ -187,6 +192,7 @@ public class DataAccess
 
         // Connect the stackID from Stack model to Flashcard model
         flashcard.StackId = ChooseStackById();
+
         flashcard.Question = AnsiConsole.Ask<string>("Enter your question: ");
         flashcard.Answer = AnsiConsole.Ask<string>("Enter your answer: ");
 
@@ -222,17 +228,33 @@ public class DataAccess
         }
     }
 
+    // Add input validation when deleting
+    // if I do delete flashcard 5 and 5 isn't there then it should give me 
+    // "flashcard 5 does not exist"
     internal void DeleteAFlashcard()
     {
         try {
             using (var conn = new SqlConnection(ConnectionString))
             {
                 ListAllFlashcards();
+
                 conn.Open();
 
-                string getId = AnsiConsole.Ask<string>("Enter the Id of the flashcard you would like to delete: ");
+                int getId = AnsiConsole.Ask<int>("Enter the Id of the flashcard you would like to delete: ");
+        
                 string deleteQuery = "DELETE FROM Flashcards WHERE Id=@Id";
+
+                string checkIfEmptyQuery = "SELECT COUNT(*) FROM Flashcards";
+
+                int rowCount = conn.ExecuteScalar<int>(checkIfEmptyQuery);
+
+                if (rowCount == 0)
+                {
+                    conn.Execute("DBCC CHECKIDENT('Flashcards', RESEED, 0)");
+                }
+
                 conn.Execute(deleteQuery, new {Id = getId});
+
                 AnsiConsole.MarkupLine($"[green]Item Id: {getId} has been successfully deleted![/]");
 
                 ListAllFlashcards();
@@ -254,6 +276,11 @@ public class DataAccess
                 string listFlashcardsQuery = "SELECT * FROM FlashcardView";
 
                 var records = conn.Query<FlashcardDTO>(listFlashcardsQuery).ToList();
+
+                if (records.Count == 0)
+                {
+                    AnsiConsole.MarkupLine("[red]No flashcards currently exist.[/]");
+                }
 
                 foreach (var item in records)
                 {
