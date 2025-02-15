@@ -114,6 +114,34 @@ public class DataAccess
         Console.ReadKey();
     }
 
+    internal void ListAllStacksForMenu()
+    {
+        try
+        {
+            using (var conn = new SqlConnection(ConnectionString))
+            {
+                conn.Open();
+                string selectQuery = "SELECT * FROM Stacks ORDER BY Id";
+
+                var records = conn.Query<Stack>(selectQuery).ToList();
+
+                if (records.Count == 0)
+                {
+                    AnsiConsole.MarkupLine("[red]No stacks exists, please create one! [/]");
+                }
+                foreach (var item in records)
+                {
+                    Console.WriteLine($"{item.Name}");
+                    Console.WriteLine("");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"{ex.Message}");
+        }
+    }
+
     internal List<Stack> ListAllStacks()
     {
         try
@@ -130,10 +158,10 @@ public class DataAccess
                     AnsiConsole.MarkupLine("[red]No stacks exists, please create one! [/]");
                 }
 
-                foreach (var item in records)
-                {
-                    Console.WriteLine($"{item.Name}");
-                }
+                // foreach (var item in records)
+                // {
+                //     Console.WriteLine($"{item.Name}");
+                // }
                 return records;
             }
         }
@@ -229,40 +257,47 @@ public class DataAccess
     }
 
     // Add input validation when deleting
-    // if I do delete flashcard 5 and 5 isn't there then it should give me 
+    // if I do delete flashcard 5 and 5 isn't there then it should give me
     // "flashcard 5 does not exist"
+    // UPDATED VERSION CHECK THIS AGAIN (2/13/2025)
     internal void DeleteAFlashcard()
     {
-        try {
+        try
+        {
             using (var conn = new SqlConnection(ConnectionString))
             {
-                ListAllFlashcards();
+                int getId = AnsiConsole.Ask<int>("Enter the ID of the item to delete: ");
 
-                conn.Open();
+                int itemExists = conn.ExecuteScalar<int>(
+                    "SELECT COUNT(1) FROM Flashcards WHERE Id = @Id",
+                    new { Id = getId }
+                );
 
-                int getId = AnsiConsole.Ask<int>("Enter the Id of the flashcard you would like to delete: ");
-        
-                string deleteQuery = "DELETE FROM Flashcards WHERE Id=@Id";
-
-                string checkIfEmptyQuery = "SELECT COUNT(*) FROM Flashcards";
-
-                int rowCount = conn.ExecuteScalar<int>(checkIfEmptyQuery);
-
-                if (rowCount == 0)
+                if (itemExists == 0)
                 {
-                    conn.Execute("DBCC CHECKIDENT('Flashcards', RESEED, 0)");
+                    AnsiConsole.MarkupLine("[red] Item does not exist! [/]");
                 }
-
-                conn.Execute(deleteQuery, new {Id = getId});
-
-                AnsiConsole.MarkupLine($"[green]Item Id: {getId} has been successfully deleted![/]");
-
-                ListAllFlashcards();
+                else
+                {
+                    int rowsAffected = conn.Execute(
+                        "DELETE From Flashcards WHERE Id = @Id",
+                        new { Id = getId }
+                    );
+                    AnsiConsole.MarkupLine("[green]Item has been successfully deleted![/]");
+                }
             }
-        } catch (Exception ex)
+        }
+        catch (Exception ex)
         {
             AnsiConsole.MarkupLine($"[red]{ex.Message}[/]");
         }
+    }
+
+    internal void UpdateFlashcard()
+    {
+        int getId = AnsiConsole.Ask<int>(
+            "Enter the id of the flashcard you would like to change: "
+        );
     }
 
     internal void ListAllFlashcards()
