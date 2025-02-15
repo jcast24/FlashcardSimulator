@@ -113,17 +113,17 @@ public class DataAccess
         AnsiConsole.MarkupLine("Press any key to continue!");
         Console.ReadKey();
     }
-    
+
     internal void ListAllStacksForMenu()
     {
-       var stacks =  GetAllStacks();
-       if (stacks.Count > 0)
-       {
-           foreach(var stack in stacks)
-           {
-               Console.WriteLine($"{stack.Name}\n");
-           }
-       }
+        var stacks = GetAllStacks();
+        if (stacks.Count > 0)
+        {
+            foreach (var stack in stacks)
+            {
+                Console.WriteLine($"{stack.Name}\n");
+            }
+        }
     }
 
     internal List<Stack> GetAllStacks()
@@ -272,15 +272,9 @@ public class DataAccess
         }
     }
 
-    internal void UpdateFlashcard()
-    {
-        int getId = AnsiConsole.Ask<int>(
-            "Enter the id of the flashcard you would like to change: "
-        );
-    }
-
     internal void ListAllFlashcards()
     {
+        Console.Clear();
         try
         {
             using (var conn = new SqlConnection(ConnectionString))
@@ -307,6 +301,27 @@ public class DataAccess
         catch (Exception ex)
         {
             Console.WriteLine($"{ex.Message}");
+        }
+    }
+    
+    // Validate the input so that the user isn't allowed to enter an Id that isn't 
+    // in the list/db
+    internal void UpdateFlashcard()
+    {
+        Console.Clear();
+        ListAllFlashcards();
+        
+        // Choose by Id of the flashcard
+        int getId = AnsiConsole.Ask<int>("Enter the id of the flashcard: ");
+
+        string updatedQuestion = AnsiConsole.Ask<string>("Re-enter the question: ");
+        string updatedAnswer = AnsiConsole.Ask<string>("Re-enter the answer: ");
+
+        using (var conn = new SqlConnection(ConnectionString))
+        {
+            string updateQuery = "UPDATE Flashcards SET Question=@Question, Answer=@Answer WHERE Id=@Id";
+            conn.Execute(updateQuery, new {Question = updatedQuestion, Answer = updatedAnswer, Id = getId});
+            AnsiConsole.MarkupLine("[green]Item has been successfully updated![/]");
         }
     }
 }
