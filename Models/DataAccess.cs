@@ -107,42 +107,26 @@ public class DataAccess
             }
 
             AnsiConsole.WriteLine("Item has been deleted.");
-            ListAllStacks();
+            ListAllStacksForMenu();
         }
 
         AnsiConsole.MarkupLine("Press any key to continue!");
         Console.ReadKey();
     }
-
+    
     internal void ListAllStacksForMenu()
     {
-        try
-        {
-            using (var conn = new SqlConnection(ConnectionString))
-            {
-                conn.Open();
-                string selectQuery = "SELECT * FROM Stacks ORDER BY Id";
-
-                var records = conn.Query<Stack>(selectQuery).ToList();
-
-                if (records.Count == 0)
-                {
-                    AnsiConsole.MarkupLine("[red]No stacks exists, please create one! [/]");
-                }
-                foreach (var item in records)
-                {
-                    Console.WriteLine($"{item.Name}");
-                    Console.WriteLine("");
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"{ex.Message}");
-        }
+       var stacks =  GetAllStacks();
+       if (stacks.Count > 0)
+       {
+           foreach(var stack in stacks)
+           {
+               Console.WriteLine($"{stack.Name}\n");
+           }
+       }
     }
 
-    internal List<Stack> ListAllStacks()
+    internal List<Stack> GetAllStacks()
     {
         try
         {
@@ -157,11 +141,6 @@ public class DataAccess
                 {
                     AnsiConsole.MarkupLine("[red]No stacks exists, please create one! [/]");
                 }
-
-                // foreach (var item in records)
-                // {
-                //     Console.WriteLine($"{item.Name}");
-                // }
                 return records;
             }
         }
@@ -178,7 +157,7 @@ public class DataAccess
     {
         var dataAccess = new DataAccess();
 
-        var stacks = dataAccess.ListAllStacks();
+        var stacks = dataAccess.GetAllStacks();
         var stacksArray = stacks.Select(x => x.Name).ToArray();
 
         var option = AnsiConsole.Prompt(
