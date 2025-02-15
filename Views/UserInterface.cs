@@ -58,7 +58,7 @@ public class UserInterface()
             switch (choice)
             {
                 case StacksMenu.ManageAllStacks:
-                    data.ListAllStacks();
+                    data.ListAllStacksForMenu();
                     break;
                 case StacksMenu.CreateNewStack:
                     data.CreateNewStack();
@@ -101,7 +101,8 @@ public class UserInterface()
                     data.CreateAFlashcard();
                     break;
                 case FlashcardMenu.UpdateFlashcard:
-                    throw new NotImplementedException();
+                    data.UpdateFlashcard();
+                    break;
                 case FlashcardMenu.DeleteFlashcard:
                     data.DeleteAFlashcard();
                     break;
