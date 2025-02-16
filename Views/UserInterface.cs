@@ -39,9 +39,9 @@ public class UserInterface()
     internal static void MenuStack()
     {
         Console.Clear();
-        
-        DataAccess data = new DataAccess();
 
+        DataAccess data = new DataAccess();
+        
         bool isRunning = true;
         while (isRunning)
         {
@@ -80,7 +80,8 @@ public class UserInterface()
     {
         Console.Clear();
         bool isRunning = true;
-        DataAccess data = new DataAccess();
+        DataAccess db = new DataAccess();
+        FlashcardService flashService = new FlashcardService(db);
 
         while (isRunning)
         {
@@ -98,16 +99,16 @@ public class UserInterface()
             switch(choice)
             {
                 case FlashcardMenu.CreateNewFlashcard:
-                    data.CreateAFlashcard();
+                    flashService.CreateAFlashcard();
                     break;
                 case FlashcardMenu.UpdateFlashcard:
-                    data.UpdateFlashcard();
+                    flashService.UpdateFlashcard();
                     break;
                 case FlashcardMenu.DeleteFlashcard:
-                    data.DeleteAFlashcard();
+                    flashService.DeleteAFlashcard();
                     break;
                 case FlashcardMenu.ListAllFlashcards:
-                    data.ListAllFlashcards();
+                    flashService.ListAllFlashcards();
                     // data.GetFlashcardsWithStackNames();
                     break;
                 case FlashcardMenu.ReturnToMenu:
