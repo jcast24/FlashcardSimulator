@@ -4,21 +4,22 @@ using Spectre.Console;
 
 namespace FlashcardSimulator;
 
-class FlashcardService {
-    private readonly DataAccess _data;
+class FlashcardService
+{
+    private readonly DataAccess _dataAccess;
 
-    public FlashcardService(DataAccess data) 
+    public FlashcardService(DataAccess dataAccess)
     {
-        _data = data;
+        _dataAccess = dataAccess;
     }
 
     // Change this, choose the stack by stack name, not by the Id of the stack
     // Do this because we want to show the stack name when we show all the flashcards
-    private static int ChooseStackById()
+    private int ChooseStackById()
     {
-        var dataAccess = new DataAccess();
+        // var dataAccess = new DataAccess();
 
-        var stacks = dataAccess.GetAllStacks();
+        var stacks = _dataAccess.GetAllStacks();
         var stacksArray = stacks.Select(x => x.Name).ToArray();
 
         var option = AnsiConsole.Prompt(
@@ -33,7 +34,7 @@ class FlashcardService {
     {
         try
         {
-            using (var conn = new SqlConnection(_data.GetConnection()))
+            using (var conn = new SqlConnection(_dataAccess.GetConnection()))
             {
                 string sql =
                     "SELECT FlashcardId as Id, Question, Answer, StackName FROM FlashcardView;";
@@ -71,9 +72,10 @@ class FlashcardService {
     // Instead of stackId, should be better to use the name of the stack.
     internal void InsertFlashcardIntoStack(Flashcard flashcard)
     {
+        DataAccess db = new DataAccess();
         try
         {
-            using (var conn = new SqlConnection(ConnectionString))
+            using (var conn = new SqlConnection(_dataAccess.GetConnection()))
             {
                 conn.Open();
 
@@ -102,9 +104,10 @@ class FlashcardService {
     // UPDATED VERSION CHECK THIS AGAIN (2/13/2025)
     internal void DeleteAFlashcard()
     {
+        DataAccess db = new DataAccess();
         try
         {
-            using (var conn = new SqlConnection(ConnectionString))
+            using (var conn = new SqlConnection(_dataAccess.GetConnection()))
             {
                 int getId = AnsiConsole.Ask<int>("Enter the ID of the item to delete: ");
 
@@ -135,10 +138,11 @@ class FlashcardService {
 
     internal void ListAllFlashcards()
     {
+        DataAccess db = new DataAccess();
         Console.Clear();
         try
         {
-            using (var conn = new SqlConnection(ConnectionString))
+            using (var conn = new SqlConnection(_dataAccess.GetConnection()))
             {
                 conn.Open();
 
@@ -164,24 +168,34 @@ class FlashcardService {
             Console.WriteLine($"{ex.Message}");
         }
     }
-    
-    // Validate the input so that the user isn't allowed to enter an Id that isn't 
+
+    // Validate the input so that the user isn't allowed to enter an Id that isn't
     // in the list/db
     internal void UpdateFlashcard()
     {
+        DataAccess db = new DataAccess();
         Console.Clear();
         ListAllFlashcards();
-        
+
         // Choose by Id of the flashcard
         int getId = AnsiConsole.Ask<int>("Enter the id of the flashcard: ");
 
         string updatedQuestion = AnsiConsole.Ask<string>("Re-enter the question: ");
         string updatedAnswer = AnsiConsole.Ask<string>("Re-enter the answer: ");
 
-        using (var conn = new SqlConnection(ConnectionString))
+        using (var conn = new SqlConnection(_dataAccess.GetConnection()))
         {
-            string updateQuery = "UPDATE Flashcards SET Question=@Question, Answer=@Answer WHERE Id=@Id";
-            conn.Execute(updateQuery, new {Question = updatedQuestion, Answer = updatedAnswer, Id = getId});
+            string updateQuery =
+                "UPDATE Flashcards SET Question=@Question, Answer=@Answer WHERE Id=@Id";
+            conn.Execute(
+                updateQuery,
+                new
+                {
+                    Question = updatedQuestion,
+                    Answer = updatedAnswer,
+                    Id = getId,
+                }
+            );
             AnsiConsole.MarkupLine("[green]Item has been successfully updated![/]");
         }
     }
