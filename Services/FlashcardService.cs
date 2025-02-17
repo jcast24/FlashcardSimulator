@@ -168,8 +168,6 @@ class FlashcardService
         }
     }
 
-    // Validate the input so that the user isn't allowed to enter an Id that isn't
-    // in the list/db
     internal void UpdateFlashcard()
     {
         Console.Clear();
@@ -177,34 +175,36 @@ class FlashcardService
 
         using (var conn = new SqlConnection(_dataAccess.GetConnection()))
         {
-            // Choose by Id of the flashcard
-            int getId = AnsiConsole.Ask<int>("Enter the id of the flashcard: ");
-
-            int itemExists = conn.ExecuteScalar<int>(
-                "SELECT COUNT(1) FROM Flashcards WHERE Id = @Id",
-                new { Id = getId }
-            );
-
-            if (itemExists == 0)
+            bool doesItemExist;
+            int getId;
+            do 
             {
-                AnsiConsole.MarkupLine("[red]Item does not exist![/]");
-                return;
-            }
+                getId = AnsiConsole.Ask<int>("Enter the ID of the flashcard to update: ");
+
+                doesItemExist = conn.ExecuteScalar<int>("SELECT COUNT(1) FROM Flashcards WHERE Id = @Id", new {Id = getId}) > 0;
+
+                if (!doesItemExist)
+                {
+                    AnsiConsole.MarkupLine("[red]Item does not exist! Please enter a valid ID.[/]");
+                }
+                
+            } while (!doesItemExist);
 
             string updatedQuestion = AnsiConsole.Ask<string>("Re-enter the question: ");
             string updatedAnswer = AnsiConsole.Ask<string>("Re-enter the answer: ");
-            string updateQuery =
-                "UPDATE Flashcards SET Question=@Question, Answer=@Answer WHERE Id=@Id";
-            conn.Execute(
-                updateQuery,
-                new
-                {
-                    Question = updatedQuestion,
-                    Answer = updatedAnswer,
-                    Id = getId,
-                }
-            );
-            AnsiConsole.MarkupLine("[green]Item has been successfully updated![/]");
+
+            string updatedQuery = "UPDATE Flashcards SET Question=@Question, Answer=@Answer, WHERE Id = @Id";
+
+            int rowsAffected = conn.Execute(updatedQuery, new {Question = updatedQuestion, Answer = updatedAnswer, Id = getId});
+            if (rowsAffected > 0) 
+            {
+                AnsiConsole.MarkupLine("[green]Item has been successfully updated[/]");
+            } 
+            else 
+            {
+                AnsiConsole.MarkupLine("[red]Update failed. Please try again![/]");
+            }
+
         }
     }
 }
