@@ -13,22 +13,6 @@ class FlashcardService
         _dataAccess = dataAccess;
     }
 
-    // Change this, choose the stack by stack name, not by the Id of the stack
-    // Do this because we want to show the stack name when we show all the flashcards
-    private int ChooseStackById()
-    {
-        // var dataAccess = new DataAccess();
-
-        var stacks = _dataAccess.GetAllStacks();
-        var stacksArray = stacks.Select(x => x.Name).ToArray();
-
-        var option = AnsiConsole.Prompt(
-            new SelectionPrompt<string>().Title("Choose a stack: ").AddChoices(stacksArray)
-        );
-        var stackId = stacks.Single(x => x.Name == option).Id;
-        return stackId;
-    }
-
     // has to return a string
     internal string GetFlashcardsWithStackNames()
     {
@@ -51,6 +35,38 @@ class FlashcardService
             AnsiConsole.Write($"[red]{ex.Message}[/]");
         }
         return "Not found";
+    }
+
+    // Change this, choose the stack by stack name, not by the Id of the stack
+    // Do this because we want to show the stack name when we show all the flashcards
+    private int ChooseStackById()
+    {
+        // List<Stack> stacks = _dataAccess.GetAllStacks();
+        // var stacksArray = stacks.Select(x => x.Name).ToArray();
+        //
+        // var option = AnsiConsole.Prompt(
+        //     new SelectionPrompt<string>().Title("Choose a stack: ").AddChoices(stacksArray)
+        // );
+        //
+        // var stackId = stacks.Single(x => x.Name == option).Id;
+        // return stackId;
+        
+        List<Stack> stacks = _dataAccess.GetAllStacks();
+
+        Dictionary<string, int> stackDict = stacks.ToDictionary(s => s.Name, s => s.Id);
+
+        string option = AnsiConsole.Prompt(
+                new SelectionPrompt<string>().Title("Choose stack: ").AddChoices(stackDict.Keys)
+                );
+        
+        // option: (string equivalent)
+        // "Cooking" : 1
+        // "Pottery" : 2
+        // "Another option goes here" : 3
+
+        int stackId = stackDict[option]; // this is basically stackDict["Cooking"] = 1 <- The id etc etc
+
+        return stackId;
     }
 
     internal void CreateAFlashcard()
@@ -177,34 +193,45 @@ class FlashcardService
         {
             bool doesItemExist;
             int getId;
-            do 
+            do
             {
                 getId = AnsiConsole.Ask<int>("Enter the ID of the flashcard to update: ");
 
-                doesItemExist = conn.ExecuteScalar<int>("SELECT COUNT(1) FROM Flashcards WHERE Id = @Id", new {Id = getId}) > 0;
+                doesItemExist =
+                    conn.ExecuteScalar<int>(
+                        "SELECT COUNT(1) FROM Flashcards WHERE Id = @Id",
+                        new { Id = getId }
+                    ) > 0;
 
                 if (!doesItemExist)
                 {
                     AnsiConsole.MarkupLine("[red]Item does not exist! Please enter a valid ID.[/]");
                 }
-                
             } while (!doesItemExist);
 
             string updatedQuestion = AnsiConsole.Ask<string>("Re-enter the question: ");
             string updatedAnswer = AnsiConsole.Ask<string>("Re-enter the answer: ");
 
-            string updatedQuery = "UPDATE Flashcards SET Question=@Question, Answer=@Answer, WHERE Id = @Id";
+            string updatedQuery =
+                "UPDATE Flashcards SET Question=@Question, Answer=@Answer WHERE Id = @Id";
 
-            int rowsAffected = conn.Execute(updatedQuery, new {Question = updatedQuestion, Answer = updatedAnswer, Id = getId});
-            if (rowsAffected > 0) 
+            int rowsAffected = conn.Execute(
+                updatedQuery,
+                new
+                {
+                    Question = updatedQuestion,
+                    Answer = updatedAnswer,
+                    Id = getId,
+                }
+            );
+            if (rowsAffected > 0)
             {
                 AnsiConsole.MarkupLine("[green]Item has been successfully updated[/]");
-            } 
-            else 
+            }
+            else
             {
                 AnsiConsole.MarkupLine("[red]Update failed. Please try again![/]");
             }
-
         }
     }
 }
