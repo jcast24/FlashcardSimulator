@@ -104,7 +104,7 @@ class FlashcardService
     // UPDATED VERSION CHECK THIS AGAIN (2/13/2025)
     internal void DeleteAFlashcard()
     {
-        DataAccess db = new DataAccess();
+        ListAllFlashcards();
         try
         {
             using (var conn = new SqlConnection(_dataAccess.GetConnection()))
@@ -138,7 +138,6 @@ class FlashcardService
 
     internal void ListAllFlashcards()
     {
-        DataAccess db = new DataAccess();
         Console.Clear();
         try
         {
@@ -173,18 +172,27 @@ class FlashcardService
     // in the list/db
     internal void UpdateFlashcard()
     {
-        DataAccess db = new DataAccess();
         Console.Clear();
         ListAllFlashcards();
 
-        // Choose by Id of the flashcard
-        int getId = AnsiConsole.Ask<int>("Enter the id of the flashcard: ");
-
-        string updatedQuestion = AnsiConsole.Ask<string>("Re-enter the question: ");
-        string updatedAnswer = AnsiConsole.Ask<string>("Re-enter the answer: ");
-
         using (var conn = new SqlConnection(_dataAccess.GetConnection()))
         {
+            // Choose by Id of the flashcard
+            int getId = AnsiConsole.Ask<int>("Enter the id of the flashcard: ");
+
+            int itemExists = conn.ExecuteScalar<int>(
+                "SELECT COUNT(1) FROM Flashcards WHERE Id = @Id",
+                new { Id = getId }
+            );
+
+            if (itemExists == 0)
+            {
+                AnsiConsole.MarkupLine("[red]Item does not exist![/]");
+                return;
+            }
+
+            string updatedQuestion = AnsiConsole.Ask<string>("Re-enter the question: ");
+            string updatedAnswer = AnsiConsole.Ask<string>("Re-enter the answer: ");
             string updateQuery =
                 "UPDATE Flashcards SET Question=@Question, Answer=@Answer WHERE Id=@Id";
             conn.Execute(
