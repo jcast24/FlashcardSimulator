@@ -1,4 +1,6 @@
-﻿namespace FlashcardSimulator;
+﻿using FlashcardSimulator.Views;
+
+namespace FlashcardSimulator;
 
 class Program
 {
