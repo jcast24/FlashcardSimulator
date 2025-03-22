@@ -1,5 +1,4 @@
 ﻿using Dapper;
-using FlashcardSimulator.Models;
 using Microsoft.Data.SqlClient;
 using Spectre.Console;
 
