@@ -1,6 +1,7 @@
+using FlashcardSimulator.Services;
 using Spectre.Console;
 
-namespace FlashcardSimulator;
+namespace FlashcardSimulator.Views;
 
 public class UserInterface()
 {
@@ -41,6 +42,7 @@ public class UserInterface()
         Console.Clear();
 
         DataAccess data = new DataAccess();
+        StackService stackService = new StackService(data);
         
         bool isRunning = true;
         while (isRunning)
@@ -58,13 +60,13 @@ public class UserInterface()
             switch (choice)
             {
                 case StacksMenu.ManageAllStacks:
-                    data.ListAllStacksForMenu();
+                    stackService.ShowAllStacks();
                     break;
                 case StacksMenu.CreateNewStack:
-                    data.CreateNewStack();
+                    stackService.CreateNewStack();
                     break;
                 case StacksMenu.DeleteStack:
-                    data.DeleteStack();
+                    stackService.DeleteStack();
                     break;
                 case StacksMenu.ReturnToMenu:
                     isRunning = false;
@@ -81,7 +83,8 @@ public class UserInterface()
         Console.Clear();
         bool isRunning = true;
         DataAccess db = new DataAccess();
-        FlashcardService flashService = new FlashcardService(db);
+        StackService stack = new StackService(db);
+        FlashcardService flashService = new FlashcardService(db, stack);
 
         while (isRunning)
         {
@@ -105,11 +108,10 @@ public class UserInterface()
                     flashService.UpdateFlashcard();
                     break;
                 case FlashcardMenu.DeleteFlashcard:
-                    flashService.DeleteAFlashcard();
+                    // flashService.DeleteAFlashcard();
                     break;
                 case FlashcardMenu.ListAllFlashcards:
-                    flashService.ListAllFlashcards();
-                    // data.GetFlashcardsWithStackNames();
+                    flashService.ShowAllFlashcards();
                     break;
                 case FlashcardMenu.ReturnToMenu:
                     isRunning = false;
