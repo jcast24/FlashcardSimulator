@@ -7,25 +7,25 @@ namespace FlashcardSimulator;
 
 public class DataAccess
 {
-    IConfiguration config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
+    private readonly IConfiguration _config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
 
-    private string? ConnectionString;
+    private readonly string? _connectionString;
 
     public DataAccess()
     {
-        ConnectionString = config.GetSection("ConnectionStrings")["DefaultConnection"];
+        _connectionString = _config.GetSection("ConnectionStrings")["DefaultConnection"];
     }
 
     public string? GetConnection()
     {
-        return ConnectionString;
+        return _connectionString;
     }
 
     internal void CreateTables()
     {
         try
         {
-            using (var conn = new SqlConnection(ConnectionString))
+            using (var conn = new SqlConnection(_connectionString))
             {
                 conn.Open();
 
@@ -74,87 +74,5 @@ public class DataAccess
             Console.WriteLine($"Error: {ex.Message}");
         }
     }
-
-    internal void CreateNewStack()
-    {
-        Stack stack = new();
-
-        stack.Name = AnsiConsole.Ask<string>("Enter the name of the stack: ");
-
-        using (var conn = new SqlConnection(ConnectionString))
-        {
-            string insertQuery = @"INSERT INTO Stacks (Name) VALUES (@Name)";
-            conn.Execute(insertQuery, new { stack.Name });
-            AnsiConsole.WriteLine("Successfully created");
-        }
-
-        AnsiConsole.MarkupLine("Press any key to continue!");
-        Console.ReadKey();
-    }
-
-    internal void DeleteStack()
-    {
-        string stackName = AnsiConsole.Ask<string>(
-            "Enter the name of the stack that you want to delete: "
-        );
-        using (var conn = new SqlConnection(ConnectionString))
-        {
-            string deleteQuery = @"DELETE FROM Stacks WHERE Name = @Name";
-            conn.Execute(deleteQuery, new { Name = stackName });
-
-            string checkIfEmptyQuery = "SELECT COUNT(*) FROM Stacks";
-
-            int rowCount = conn.ExecuteScalar<int>(checkIfEmptyQuery);
-
-            if (rowCount == 0)
-            {
-                conn.Execute("DBCC CHECKIDENT('Stacks', RESEED, 0)");
-            }
-
-            AnsiConsole.WriteLine("Item has been deleted.");
-            ListAllStacksForMenu();
-        }
-
-        AnsiConsole.MarkupLine("Press any key to continue!");
-        Console.ReadKey();
-    }
-
-    internal void ListAllStacksForMenu()
-    {
-        var stacks = GetAllStacks();
-        if (stacks.Count > 0)
-        {
-            foreach (var stack in stacks)
-            {
-                Console.WriteLine($"{stack.Name}\n");
-            }
-        }
-    }
-
-    internal List<Stack> GetAllStacks()
-    {
-        try
-        {
-            using (var conn = new SqlConnection(ConnectionString))
-            {
-                conn.Open();
-                string selectQuery = "SELECT * FROM Stacks ORDER BY Id";
-
-                var records = conn.Query<Stack>(selectQuery).ToList();
-
-                if (records.Count == 0)
-                {
-                    AnsiConsole.MarkupLine("[red]No stacks exists, please create one! [/]");
-                }
-                return records;
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"{ex.Message}");
-            return new List<Stack>();
-        }
-    }
-
 
 }
