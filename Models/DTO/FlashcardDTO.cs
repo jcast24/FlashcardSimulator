@@ -1,4 +1,6 @@
-public class FlashcardDTO
+namespace FlashcardSimulator.Models.DTO;
+
+public class FlashcardDto
 {
     public int FlashcardId { get; set; }
     public string Question { get; set; } = String.Empty;
