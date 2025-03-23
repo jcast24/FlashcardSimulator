@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using FlashcardSimulator.Models;
 using Microsoft.Data.SqlClient;
 using Spectre.Console;
 
@@ -36,7 +37,7 @@ public class StackService
         var stacks = GetAllStacks();
         foreach (var stack in stacks)
         {
-            Console.WriteLine($"ID: {stack.Id}\nName: {stack.Name}\n");
+            Console.WriteLine($"Stack ID: {stack.Id}\nName: {stack.Name}\n");
         }
 
         if (!stacks.Any())
@@ -94,14 +95,9 @@ public class StackService
         try
         {
             using var connection = new SqlConnection(_dataAccess.GetConnection());
-
-            connection.Open();
-
             string deleteQuery = "DELETE FROM Stacks WHERE Id = @Id";
             connection.Execute(deleteQuery, new { Id = getId });
             AnsiConsole.MarkupLine("[green]Successfully deleted item[/]");
-            
-            connection.Close();
         }
         catch (Exception e)
         {
