@@ -1,4 +1,6 @@
-class Flashcard
+namespace FlashcardSimulator.Models;
+
+internal class Flashcard
 {
     public int Id { get; set; }
     public string Question { get; set; } = "Default";
