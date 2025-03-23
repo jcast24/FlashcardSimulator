@@ -1,4 +1,6 @@
 using Dapper;
+using FlashcardSimulator.Models;
+using FlashcardSimulator.Models.DTO;
 using Microsoft.Data.SqlClient;
 using Spectre.Console;
 
@@ -16,21 +18,21 @@ class FlashcardService
     }
 
     // Get All Flashcards
-    internal List<Flashcard> GetAllFlashcards()
+    internal List<FlashcardDto> GetAllFlashcards()
     {
         try
         {
             using var connection = new SqlConnection(_dataAccess.GetConnection());
             connection.Open();
-            string selectQuery = "SELECT * FROM Flashcards ORDER BY Id";
-            var records = connection.Query<Flashcard>(selectQuery).ToList();
+            string selectQuery = "SELECT * FROM FlashcardView ORDER BY FlashcardId";
+            var records = connection.Query<FlashcardDto>(selectQuery).ToList();
 
             return records;
         }
         catch (Exception e)
         {
             Console.WriteLine($"Error: {e.Message}");
-            return new List<Flashcard>();
+            return new List<FlashcardDto>();
         }
     }
 
@@ -46,7 +48,8 @@ class FlashcardService
 
         foreach (var flashcard in getAllFlashcards)
         {
-            AnsiConsole.MarkupLine($"ID: {flashcard.Id}\nQuestion: {flashcard.Question}\nAnswer: {flashcard.Answer}");
+            AnsiConsole.MarkupLine(
+                $"Flashcard ID: {flashcard.FlashcardId}\nQuestion: {flashcard.Question}\nAnswer: {flashcard.Answer}");
         }
     }
 
@@ -60,7 +63,7 @@ class FlashcardService
             .Title("Choose a flashcard: ")
             .AddChoices(flashcardsArray));
 
-        var flashcardId = flashcards.Single(x => x.Question == option).Id;
+        var flashcardId = flashcards.Single(x => x.Question == option).FlashcardId;
         return flashcardId;
     }
 
@@ -106,7 +109,7 @@ class FlashcardService
             AnsiConsole.MarkupLine($"[red]Error InsertFlashcardIntoStack: {e.Message}[/]");
         }
 
-        AnsiConsole.MarkupLine("[cyan]Press any key to continue[/]");
+        AnsiConsole.MarkupLine("\n[cyan]Press any key to continue[/]");
         Console.ReadKey();
     }
 
@@ -114,11 +117,11 @@ class FlashcardService
     internal void UpdateFlashcard()
     {
         Console.Clear();
-        
+
         using var connection = new SqlConnection(_dataAccess.GetConnection());
 
         int getId = GetFlashcardById();
-        
+
         var updatedQuestion = AnsiConsole.Ask<string>("Re-enter question: ");
         var updatedAnswer = AnsiConsole.Ask<string>("Re-enter answer: ");
 
@@ -126,5 +129,48 @@ class FlashcardService
         connection.Execute(updateQuery, new { Question = updatedQuestion, Answer = updatedAnswer, Id = getId });
         AnsiConsole.MarkupLine("[green]Successfully updated item[/]");
     }
+
     // Delete a flashcard based on id 
+    internal void DeleteFlashcard()
+    {
+        Console.Clear();
+
+        try
+        {
+            using var connection = new SqlConnection(_dataAccess.GetConnection());
+
+            // basically we need to create a checker to check if there are any items in the database
+            // if there aren't return a message
+            var dbCount = "SELECT COUNT(*) FROM Flashcards";
+            var count = connection.ExecuteScalar<int>(dbCount);
+
+            if (count == 0)
+            {
+                // Might need to change Flashcards to FlashcardsDTO
+                var reseedQuery = "DBCC CHECKIDENT('Flashcards', RESEED, 0);";
+                connection.Execute(reseedQuery);
+                AnsiConsole.MarkupLine("[red]There are no items to delete[/]");
+            }
+            else
+            {
+                int getId = GetFlashcardById();
+
+                var reseedQuery = "DBCC CHECKIDENT('Flashcards', RESEED, 0);";
+                connection.Execute(reseedQuery);
+
+                var deleteQuery = "DELETE FROM Flashcards WHERE Id=@Id";
+
+                connection.Execute(deleteQuery, new { Id = getId });
+                
+                AnsiConsole.MarkupLine("[green]Successfully deleted item[/]");
+            }
+
+            // if items in database = 0 or items in database.Count == 0
+            // run this sql RESEED command
+        }
+        catch (Exception e)
+        {
+            AnsiConsole.MarkupLine($"[red]Error DeleteFlashcard: {e.Message}[/]");
+        }
+    }
 }
