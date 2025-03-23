@@ -1,4 +1,5 @@
-﻿using FlashcardSimulator.Views;
+﻿using FlashcardSimulator.Models;
+using FlashcardSimulator.Views;
 
 namespace FlashcardSimulator;
 
