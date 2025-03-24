@@ -66,6 +66,22 @@ public class DataAccess
                     JOIN Stacks s ON f.StackId = s.Id;
                     ";
                 conn.Execute(createFlashcardViewTable);
+
+                string createStudySessionTable =
+                    @"IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'StudySessions')
+                    CREATE TABLE StudySessions (
+                        Id int IDENTITY(1,1) NOT NULL PRIMARY KEY,
+                        Questions int NOT NULL,
+                        Date DateTime NOT NULL, 
+                        CorrectAnswers int NOT NULL,
+                        Percentage AS (CorrectAnswers * 100) / Questions PERSISTED,
+                        Time TIME NOT NULL,
+                        StackId int NOT NULL
+                            FOREIGN KEY 
+                            REFERENCES Stacks(Id)
+                            ON DELETE CASCADE 
+                            ON UPDATE CASCADE);";
+                conn.Execute(createStudySessionTable);
             }
         }
         catch (Exception ex)
@@ -73,5 +89,4 @@ public class DataAccess
             Console.WriteLine($"Error: {ex.Message}");
         }
     }
-
 }
