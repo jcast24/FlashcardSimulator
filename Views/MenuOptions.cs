@@ -1,10 +1,10 @@
-namespace FlashcardSimulator;
+namespace FlashcardSimulator.Views;
 
 internal struct Menu
 {
     public const string StacksMenu = "Manage Stacks";
     public const string FlashcardMenu = "Manage Flashcard Menu";
-    // public const string StudyArea = "Study Session";
+    public const string StudySession = "Study Session";
     public const string Quit = "Quit";
 }
 
@@ -22,5 +22,13 @@ internal struct FlashcardMenu
     public const string UpdateFlashcard = "Update existing flashcard";
     public const string DeleteFlashcard = "Delete Flashcard";
     public const string ListAllFlashcards = "List all Flashcards";
+    public const string ReturnToMenu = "Return to Main Menu";
+}
+
+internal struct StudySessionMenu
+{
+    public const string CreateStudySession = "Create a new study session";
+    public const string ShowAllStudySessions = "Show all the study sessions";
+    public const string DeleteStudySession = "Delete a study session";
     public const string ReturnToMenu = "Return to Main Menu";
 }
