@@ -1,3 +1,4 @@
+using FlashcardSimulator.Models;
 using FlashcardSimulator.Services;
 using Spectre.Console;
 
@@ -15,7 +16,7 @@ public class UserInterface()
             var choice = AnsiConsole.Prompt(
                 new SelectionPrompt<string>()
                     .Title("Pick a choice!")
-                    .AddChoices(Menu.StacksMenu, Menu.FlashcardMenu, Menu.Quit)
+                    .AddChoices(Menu.StacksMenu, Menu.FlashcardMenu, Menu.StudySession, Menu.Quit)
             );
 
             switch (choice)
@@ -25,6 +26,10 @@ public class UserInterface()
                     break;
                 case Menu.FlashcardMenu:
                     MenuFlashcard();
+                    break;
+                case Menu.StudySession:
+                    MenuStudySession();
+                    Console.WriteLine("Study session");
                     break;
                 case Menu.Quit:
                     Console.Write("Goodbye!");
@@ -43,7 +48,7 @@ public class UserInterface()
 
         DataAccess data = new DataAccess();
         StackService stackService = new StackService(data);
-        
+
         bool isRunning = true;
         while (isRunning)
         {
@@ -99,7 +104,7 @@ public class UserInterface()
                     )
             );
 
-            switch(choice)
+            switch (choice)
             {
                 case FlashcardMenu.CreateNewFlashcard:
                     flashService.CreateAFlashcard();
@@ -108,7 +113,7 @@ public class UserInterface()
                     flashService.UpdateFlashcard();
                     break;
                 case FlashcardMenu.DeleteFlashcard:
-                    // flashService.DeleteAFlashcard();
+                    flashService.DeleteFlashcard();
                     break;
                 case FlashcardMenu.ListAllFlashcards:
                     flashService.ShowAllFlashcards();
@@ -118,6 +123,43 @@ public class UserInterface()
                     break;
                 default:
                     throw new NotImplementedException();
+            }
+        }
+    }
+
+    internal static void MenuStudySession()
+    {
+        Console.Clear();
+        bool isRunning = true;
+
+        DataAccess db = new DataAccess();
+        StackService stack = new StackService(db);
+        FlashcardService flashcards = new FlashcardService(db, stack);
+        StudySessionService studySession = new StudySessionService(stack, flashcards, db);
+
+        while (isRunning)
+        {
+            var choice = AnsiConsole.Prompt(
+                new SelectionPrompt<string>()
+                    .AddChoices(
+                        StudySessionMenu.CreateStudySession,
+                        StudySessionMenu.ShowAllStudySessions,
+                        StudySessionMenu.DeleteStudySession,
+                        StudySessionMenu.ReturnToMenu
+                    )
+            );
+
+            switch (choice)
+            {
+                case StudySessionMenu.CreateStudySession:
+                    studySession.CreateNewStudySession();
+                    break;
+                case StudySessionMenu.ReturnToMenu:
+                    isRunning = false;
+                    break;
+                default:
+                    Console.WriteLine("Please choose a correct option!");
+                    break;
             }
         }
     }
