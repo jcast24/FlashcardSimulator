@@ -6,7 +6,7 @@ using Spectre.Console;
 
 namespace FlashcardSimulator.Services;
 
-class FlashcardService
+public class FlashcardService
 {
     private readonly DataAccess _dataAccess;
     private readonly StackService _stackService;
