@@ -154,6 +154,9 @@ public class UserInterface()
                 case StudySessionMenu.CreateStudySession:
                     studySession.CreateNewStudySession();
                     break;
+                case StudySessionMenu.ShowAllStudySessions:
+                    studySession.ShowAllStudySessions();
+                    break;
                 case StudySessionMenu.ReturnToMenu:
                     isRunning = false;
                     break;
