@@ -1,6 +1,6 @@
 ﻿namespace FlashcardSimulator.Models;
 
-public class StudySession
+public class StudySessions
 {
     public int FlashcardId { get; set; }
     public int StackId { get; set; }
