@@ -1,4 +1,5 @@
-﻿using Dapper;
+﻿using System.Globalization;
+using Dapper;
 using FlashcardSimulator.Models;
 using Microsoft.Data.SqlClient;
 using Spectre.Console;
@@ -11,13 +12,12 @@ public class StudySessionService
     private readonly StackService _stackService;
     private readonly FlashcardService _flashcardService;
     
-    // Housekeeping
-    // Get Study sessions from Database
-    // Show all the Study Sessions (basically output to console)
-    // delete study session
-
     // Create a new study session
-    public StudySessionService(StackService stackService, FlashcardService flashcardService, DataAccess dataAccess)
+    public StudySessionService(
+        StackService stackService,
+        FlashcardService flashcardService,
+        DataAccess dataAccess
+    )
     {
         _stackService = stackService;
         _flashcardService = flashcardService;
@@ -32,7 +32,7 @@ public class StudySessionService
 
         var correctAnswers = 0;
 
-        var studySession = new StudySession();
+        var studySession = new StudySessions();
         studySession.StackId = stackId;
         studySession.FlashcardId = flashcardId;
         studySession.Date = DateTime.Now;
@@ -67,29 +67,79 @@ public class StudySessionService
     }
 
     // Insert into Database
-    internal void InsertStudySessionIntoDb(StudySession studySession)
+    internal void InsertStudySessionIntoDb(StudySessions studySession)
     {
         using var connection = new SqlConnection(_dataAccess.GetConnection());
-        string insertSessionQuery = """
-                                    INSERT INTO StudySessions (FlashcardId, StackId, Date, AmountOfQuestions, CorrectAnswersAmount, Time)
-                                                VALUES (@FlashcardId, @StackId, @Date, @AmountOfQuestions, @CorrectAnswersAmount, @Time);
-                                    """;
+        connection.Open();
+        string insertSessionQuery =
+            @"
+            INSERT INTO StudySessions (StackId, Date, AmountOfQuestions, CorrectAnswersAmount, Time)
+            VALUES (@StackId, @Date, @AmountOfQuestions, @CorrectAnswersAmount, @Time);
+            ";
 
-        connection.Execute(insertSessionQuery, new
-        {
-            studySession.FlashcardId,
-            studySession.StackId,
-            studySession.Date,
-            studySession.AmountOfQuestions,
-            studySession.CorrectAnswersAmount,
-            studySession.Time,
-        });
-        
+        connection.Execute(
+            insertSessionQuery,
+            new
+            {
+                studySession.FlashcardId,
+                studySession.StackId,
+                studySession.Date,
+                studySession.AmountOfQuestions,
+                studySession.CorrectAnswersAmount,
+                studySession.Time,
+            }
+        );
+
         AnsiConsole.MarkupLine("[green]Successfully added Session into DB[/]");
     }
 
-
     // Get Study sessions from Database
+    private IEnumerable<StudySessions> GetAllStudySessions()
+    {
+        try
+        {
+            using var connection = new SqlConnection(_dataAccess.GetConnection());
+            string selectQuery = "SELECT * FROM StudySessions";
+            var records = connection.Query<StudySessions>(selectQuery);
+            return records;
+        }
+        catch (Exception e)
+        {
+            AnsiConsole.MarkupLine($"[red]Error GetAllStudySessions: {e.Message} [/]");
+            return new List<StudySessions>();
+        }
+    }
+
     // Show all the Study Sessions (basically output to console)
+    internal void ShowAllStudySessions()
+    {
+        string[] colNames = ["Flashcard ID", "Stack ID", "Questions", "Correct", "Percent", "Time", "Date"];
+
+        var studySessions = GetAllStudySessions();
+
+        var table = new Table();
+        foreach (var session in studySessions)
+        {
+            table.AddColumns(colNames);
+            table.AddRow(
+                session.FlashcardId.ToString(),
+                session.StackId.ToString(),
+                session.AmountOfQuestions.ToString(),
+                session.CorrectAnswersAmount.ToString(),
+                session.Percentage.ToString(),
+                session.Time.ToString(),
+                session.Date.ToString(CultureInfo.InvariantCulture)
+                );
+        }
+
+        table.Border(TableBorder.Rounded);
+        table.Title("[underline green]Study Sessions![/]");
+        table.Centered();
+        AnsiConsole.Write(table);
+        
+        AnsiConsole.WriteLine("Press any key to continue");
+        Console.ReadKey();
+    }
+
     // delete study session
 }
