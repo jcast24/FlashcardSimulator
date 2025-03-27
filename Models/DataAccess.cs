@@ -6,7 +6,9 @@ namespace FlashcardSimulator.Models;
 
 public class DataAccess
 {
-    private readonly IConfiguration _config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
+    private readonly IConfiguration _config = new ConfigurationBuilder()
+        .AddJsonFile("appsettings.json")
+        .Build();
 
     private readonly string? _connectionString;
 
@@ -24,22 +26,21 @@ public class DataAccess
     {
         try
         {
-            using (var conn = new SqlConnection(_connectionString))
-            {
-                conn.Open();
+            using var conn = new SqlConnection(_connectionString);
+            conn.Open();
 
-                string createStackTableSql =
-                    @"IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Stacks')
+            string createStackTableSql =
+                @"IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Stacks')
                     CREATE TABLE Stacks (
                             Id int IDENTITY(1,1) NOT NULL,
                             Name NVARCHAR(30) NOT NULL UNIQUE,
                             PRIMARY KEY (Id)
                             );
                 ";
-                conn.Execute(createStackTableSql);
+            conn.Execute(createStackTableSql);
 
-                string createFlashCardTableSql =
-                    @"IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Flashcards')
+            string createFlashCardTableSql =
+                @"IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Flashcards')
                     CREATE TABLE Flashcards (
                         Id int IDENTITY(1,1) NOT NULL PRIMARY KEY,
                         Question NVARCHAR(30) NOT NULL,
@@ -50,11 +51,10 @@ public class DataAccess
                             ON DELETE CASCADE
                             ON UPDATE CASCADE
                     );";
+            conn.Execute(createFlashCardTableSql);
 
-                conn.Execute(createFlashCardTableSql);
-
-                string createFlashcardViewTable =
-                    @"
+            string createFlashcardViewTable =
+                @"
                     CREATE VIEW FlashcardView AS 
                     SELECT
                         f.Id AS FlashcardId,
@@ -65,24 +65,24 @@ public class DataAccess
                     From Flashcards f 
                     JOIN Stacks s ON f.StackId = s.Id;
                     ";
-                conn.Execute(createFlashcardViewTable);
+            conn.Execute(createFlashcardViewTable);
 
-                string createStudySessionTable =
-                    @"IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'StudySessions')
-                    CREATE TABLE StudySessions (
-                        Id int IDENTITY(1,1) NOT NULL PRIMARY KEY,
-                        Questions int NOT NULL,
-                        Date DateTime NOT NULL, 
-                        CorrectAnswers int NOT NULL,
-                        Percentage AS (CorrectAnswers * 100) / Questions PERSISTED,
-                        Time TIME NOT NULL,
-                        StackId int NOT NULL
-                            FOREIGN KEY 
-                            REFERENCES Stacks(Id)
-                            ON DELETE CASCADE 
-                            ON UPDATE CASCADE);";
-                conn.Execute(createStudySessionTable);
-            }
+            string createStudySessionTable =
+                @"IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'StudySessions')
+                CREATE TABLE StudySessions (
+                    Id int IDENTITY(1,1) NOT NULL PRIMARY KEY,
+                    AmountOfQuestions int NOT NULL,
+                    Date DateTime NOT NULL,
+                    CorrectAnswersAmount int NOT NULL,
+                    Percentage AS (CorrectAnswersAmount * 100) / AmountOfQuestions PERSISTED,
+                    Time TIME NOT NULL,
+                    StackId int NOT NULL
+                        FOREIGN KEY
+                        REFERENCES Stacks(Id)
+                        ON DELETE CASCADE
+                        ON UPDATE CASCADE);";
+
+            conn.Execute(createStudySessionTable);
         }
         catch (Exception ex)
         {
