@@ -7,8 +7,8 @@ class Program
 {
     static void Main(string[] args)
     {
-        DataAccess db = new DataAccess();
-        UserInterface ui = new UserInterface();
+        var db = new DataAccess();
+        var ui = new UserInterface();
         db.CreateTables();
         ui.MainMenu();
     }
