@@ -80,8 +80,7 @@ public class DataAccess
                         FOREIGN KEY
                         REFERENCES Stacks(Id)
                         ON DELETE CASCADE
-                        ON UPDATE CASCADE
-                    );";
+                        ON UPDATE CASCADE);";
             
             conn.Execute(createStudySessionTable);
         }
