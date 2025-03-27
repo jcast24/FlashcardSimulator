@@ -27,14 +27,14 @@ public class StudySessionService
     internal void CreateNewStudySession()
     {
         var stackId = _stackService.ChooseStackById();
-        var flashcardId = _flashcardService.GetFlashcardById();
+        // var flashcardId = _flashcardService.GetFlashcardById();
         var flashcards = _flashcardService.GetAllFlashcards();
 
         var correctAnswers = 0;
 
         var studySession = new StudySessions();
         studySession.StackId = stackId;
-        studySession.FlashcardId = flashcardId;
+        // studySession.FlashcardId = flashcardId;
         studySession.Date = DateTime.Now;
 
         studySession.AmountOfQuestions = flashcards.Count;
@@ -81,7 +81,6 @@ public class StudySessionService
             insertSessionQuery,
             new
             {
-                studySession.FlashcardId,
                 studySession.StackId,
                 studySession.Date,
                 studySession.AmountOfQuestions,
@@ -113,16 +112,17 @@ public class StudySessionService
     // Show all the Study Sessions (basically output to console)
     internal void ShowAllStudySessions()
     {
-        string[] colNames = ["Flashcard ID", "Stack ID", "Questions", "Correct", "Percent", "Time", "Date"];
+        string[] colNames = ["Session ID", "Stack ID", "Questions", "Correct", "Percent", "Time", "Date"];
 
         var studySessions = GetAllStudySessions();
 
         var table = new Table();
+        
+        table.AddColumns(colNames);
         foreach (var session in studySessions)
         {
-            table.AddColumns(colNames);
             table.AddRow(
-                session.FlashcardId.ToString(),
+                session.Id.ToString(),
                 session.StackId.ToString(),
                 session.AmountOfQuestions.ToString(),
                 session.CorrectAnswersAmount.ToString(),
@@ -142,4 +142,12 @@ public class StudySessionService
     }
 
     // delete study session
+    internal void DeleteStudySession()
+    {
+        using var connection = new SqlConnection(_dataAccess.GetConnection());
+        var deleteId = AnsiConsole.Ask<int>("Which session would you like to delete? ");
+        var deleteQuery = "DELETE FROM StudySessions WHERE Id=@Id";
+        connection.Execute(deleteQuery, new { Id = deleteId });
+        AnsiConsole.MarkupLine("[green] Successfully deleted item! [/]");
+    }
 }
