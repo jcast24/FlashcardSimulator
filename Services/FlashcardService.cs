@@ -54,11 +54,13 @@ public class FlashcardService
     }
 
     // Get Flashcard by ID
+    //
+    // Need to change the var option
     internal int GetFlashcardById()
     {
         var flashcards = GetAllFlashcards();
         var flashcardsArray = flashcards.Select(x => x.Question).ToArray();
-
+    
         var option = AnsiConsole.Prompt(new SelectionPrompt<string>()
             .Title("Choose a flashcard: ")
             .AddChoices(flashcardsArray));
