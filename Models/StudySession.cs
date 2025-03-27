@@ -2,7 +2,7 @@
 
 public class StudySessions
 {
-    public int FlashcardId { get; set; }
+    public int Id { get; set; }
     public int StackId { get; set; }
     public DateTime Date { get; set; }
     public int AmountOfQuestions { get; set; }
