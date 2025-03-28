@@ -36,7 +36,9 @@ public class FlashcardService
         }
     }
 
-    // Show All Flashcards (this is for the menu)
+    /// <summary>
+    /// Show all Flashcards. Convert into an actual table using AnsiConsole
+    /// </summary>
     internal void ShowAllFlashcards()
     {
         var getAllFlashcards = GetAllFlashcards();
@@ -46,26 +48,30 @@ public class FlashcardService
             AnsiConsole.MarkupLine("[red]There are no flashcards available[/]");
         }
 
+        string[] colNames = ["Flashcard ID", "Question", "Answer"];
+        var table = new Table();
+        table.AddColumns(colNames);
+
         foreach (var flashcard in getAllFlashcards)
         {
-            AnsiConsole.MarkupLine(
-                $"Flashcard ID: {flashcard.FlashcardId}\nQuestion: {flashcard.Question}\nAnswer: {flashcard.Answer}");
+            table.AddRow(
+                flashcard.FlashcardId.ToString(),
+                flashcard.Question,
+                flashcard.Answer
+            );
         }
+
+        table.Border(TableBorder.Rounded);
+        table.Title("[underline cyan]Flashcards[/]");
+        table.Centered();
+        AnsiConsole.Write(table);
     }
 
     // Get Flashcard by ID
-    //
-    // Need to change the var option
-    internal int GetFlashcardById()
+    internal int GetFlashcardById(int id)
     {
         var flashcards = GetAllFlashcards();
-        var flashcardsArray = flashcards.Select(x => x.Question).ToArray();
-    
-        var option = AnsiConsole.Prompt(new SelectionPrompt<string>()
-            .Title("Choose a flashcard: ")
-            .AddChoices(flashcardsArray));
-
-        var flashcardId = flashcards.Single(x => x.Question == option).FlashcardId;
+        var flashcardId = flashcards.Single(x => x.FlashcardId == id).FlashcardId;
         return flashcardId;
     }
 
@@ -119,10 +125,17 @@ public class FlashcardService
     internal void UpdateFlashcard()
     {
         Console.Clear();
-
+        
+        // Show the table of flashcards here from ShowAllFlashcards();
+        ShowAllFlashcards();
+        
         using var connection = new SqlConnection(_dataAccess.GetConnection());
-
-        int getId = GetFlashcardById();
+        
+        // Ask the user for id
+        // Pass it into GetFlashcardById();
+        int id = AnsiConsole.Ask<int>("Enter the Id of the flashcard you want to update: ");
+        
+        int getId = GetFlashcardById(id);
 
         var updatedQuestion = AnsiConsole.Ask<string>("Re-enter question: ");
         var updatedAnswer = AnsiConsole.Ask<string>("Re-enter answer: ");
@@ -145,7 +158,9 @@ public class FlashcardService
             // if there aren't return a message
             var dbCount = "SELECT COUNT(*) FROM Flashcards";
             var count = connection.ExecuteScalar<int>(dbCount);
-
+            
+            
+            // if items in database = 0 or items in database.Count == 0
             if (count == 0)
             {
                 // Might need to change Flashcards to FlashcardsDTO
@@ -155,7 +170,10 @@ public class FlashcardService
             }
             else
             {
-                int getId = GetFlashcardById();
+                ShowAllFlashcards();
+                int id = AnsiConsole.Ask<int>("Enter the id of the flashcard you want to delete: ");
+                
+                int getId = GetFlashcardById(id);
 
                 var reseedQuery = "DBCC CHECKIDENT('Flashcards', RESEED, 0);";
                 connection.Execute(reseedQuery);
@@ -163,12 +181,9 @@ public class FlashcardService
                 var deleteQuery = "DELETE FROM Flashcards WHERE Id=@Id";
 
                 connection.Execute(deleteQuery, new { Id = getId });
-                
+
                 AnsiConsole.MarkupLine("[green]Successfully deleted item[/]");
             }
-
-            // if items in database = 0 or items in database.Count == 0
-            // run this sql RESEED command
         }
         catch (Exception e)
         {
