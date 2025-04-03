@@ -74,30 +74,61 @@ public class StackService
     }
 
 
-    internal int ChooseStackById()
+    internal int ChooseStackById(int id)
     {
         var stacks = GetAllStacks();
         var stacksArray = stacks.Select(x => x.Name).ToArray();
 
-        var option = AnsiConsole.Prompt(new SelectionPrompt<string>()
-            .Title("Choose a stack: ")
-            .AddChoices(stacksArray));
-
-        var stackId = stacks.Single(x => x.Name == option).Id;
+        var stackId = stacks.Single(x => x.Id == id).Id;
         return stackId;
+    }
+
+    internal int GetStackId()
+    {
+        var stacks = GetAllStacks();
+        var id = 0;
+        foreach (var stack in stacks)
+        {
+            id = stack.Id;
+        }
+        return id;
     }
 
 
     internal void DeleteStack()
     {
-        var getId = ChooseStackById();
-
         try
         {
             using var connection = new SqlConnection(_dataAccess.GetConnection());
-            string deleteQuery = "DELETE FROM Stacks WHERE Id = @Id";
-            connection.Execute(deleteQuery, new { Id = getId });
-            AnsiConsole.MarkupLine("[green]Successfully deleted item[/]");
+            var dbCount = "SELECT COUNT(*) FROM Stacks";
+            var count = connection.ExecuteScalar<int>(dbCount);
+
+            if (count == 0)
+            {
+                var reseedQuery = "DBCC CHECKIDENT('Stacks', RESEED, 0)";
+                connection.Execute(reseedQuery);
+                AnsiConsole.MarkupLine("[red]There are no stacks to delete[/]");
+            }
+            else
+            {
+                ShowAllStacks();
+
+                var id = AnsiConsole.Ask<int>("Enter the id of the stakc you want to delete: ");
+                string checkQuery = "SELECT COUNT(*) FROM Stacks WHERE Id = @Id";
+                int idExists = connection.ExecuteScalar<int>(checkQuery, new { Id = id });
+
+                if (idExists > 0)
+                {
+                    int getId = ChooseStackById(id);
+                    string deleteQuery = "DELETE FROM Stacks WHERE Id=@Id";
+                    int rows = connection.Execute(deleteQuery, new { Id = getId });
+                    AnsiConsole.MarkupLine("[green]Successfully deleted item[/]");
+                }
+                else
+                {
+                    AnsiConsole.MarkupLine("[red]Item does not exist[/]");
+                }
+            }
         }
         catch (Exception e)
         {
