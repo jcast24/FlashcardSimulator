@@ -86,12 +86,12 @@ public class StackService
     internal int GetStackId()
     {
         var stacks = GetAllStacks();
-        var id = 0;
-        foreach (var stack in stacks)
-        {
-            id = stack.Id;
-        }
-        return id;
+        var stacksArray = stacks.Select(x => x.Name).ToArray();
+
+        var option = AnsiConsole.Prompt(new SelectionPrompt<string>().Title("Choose stack: ").AddChoices(stacksArray));
+
+        var stackId = stacks.Single(x => x.Name == option).Id;
+        return stackId;
     }
 
 
@@ -112,22 +112,28 @@ public class StackService
             else
             {
                 ShowAllStacks();
+                bool validId = false;
 
-                var id = AnsiConsole.Ask<int>("Enter the id of the stakc you want to delete: ");
-                string checkQuery = "SELECT COUNT(*) FROM Stacks WHERE Id = @Id";
-                int idExists = connection.ExecuteScalar<int>(checkQuery, new { Id = id });
+                while (!validId)
+                {
+                    var id = AnsiConsole.Ask<int>("Enter the id of the stack you want to delete: ");
+                    string checkQuery = "SELECT COUNT(*) FROM Stacks WHERE Id = @Id";
+                    int idExists = connection.ExecuteScalar<int>(checkQuery, new { Id = id });
 
-                if (idExists > 0)
-                {
-                    int getId = ChooseStackById(id);
-                    string deleteQuery = "DELETE FROM Stacks WHERE Id=@Id";
-                    int rows = connection.Execute(deleteQuery, new { Id = getId });
-                    AnsiConsole.MarkupLine("[green]Successfully deleted item[/]");
+                    if (idExists > 0)
+                    {
+                        int getId = ChooseStackById(id);
+                        string deleteQuery = "DELETE FROM Stacks WHERE Id=@Id";
+                        int rows = connection.Execute(deleteQuery, new { Id = getId });
+                        AnsiConsole.MarkupLine("[green]Successfully deleted item[/]");
+                        validId = true;
+                    }
+                    else
+                    {
+                        AnsiConsole.MarkupLine("[red]Item does not exist[/]");
+                    }
                 }
-                else
-                {
-                    AnsiConsole.MarkupLine("[red]Item does not exist[/]");
-                }
+
             }
         }
         catch (Exception e)
