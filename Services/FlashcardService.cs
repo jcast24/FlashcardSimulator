@@ -80,7 +80,7 @@ public class FlashcardService
     internal void CreateAFlashcard()
     {
         Flashcard newFlashcard = new();
-        newFlashcard.StackId = _stackService.ChooseStackById();
+        newFlashcard.StackId = _stackService.ChooseStackById(newFlashcard.Id);
 
         newFlashcard.Question = AnsiConsole.Ask<string>("What is your question? ");
 
@@ -125,16 +125,16 @@ public class FlashcardService
     internal void UpdateFlashcard()
     {
         Console.Clear();
-        
+
         // Show the table of flashcards here from ShowAllFlashcards();
         ShowAllFlashcards();
-        
+
         using var connection = new SqlConnection(_dataAccess.GetConnection());
-        
+
         // Ask the user for id
         // Pass it into GetFlashcardById();
         int id = AnsiConsole.Ask<int>("Enter the Id of the flashcard you want to update: ");
-        
+
         int getId = GetFlashcardById(id);
 
         var updatedQuestion = AnsiConsole.Ask<string>("Re-enter question: ");
@@ -158,8 +158,8 @@ public class FlashcardService
             // if there aren't return a message
             var dbCount = "SELECT COUNT(*) FROM Flashcards";
             var count = connection.ExecuteScalar<int>(dbCount);
-            
-            
+
+
             // if items in database = 0 or items in database.Count == 0
             if (count == 0)
             {
@@ -172,7 +172,7 @@ public class FlashcardService
             {
                 ShowAllFlashcards();
                 int id = AnsiConsole.Ask<int>("Enter the id of the flashcard you want to delete: ");
-                
+
                 int getId = GetFlashcardById(id);
 
                 var reseedQuery = "DBCC CHECKIDENT('Flashcards', RESEED, 0);";
