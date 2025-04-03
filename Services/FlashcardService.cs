@@ -80,7 +80,10 @@ public class FlashcardService
     internal void CreateAFlashcard()
     {
         Flashcard newFlashcard = new();
-        newFlashcard.StackId = _stackService.ChooseStackById(newFlashcard.Id);
+
+        // old
+        // newFlashcard.StackId = _stackService.ChooseStackById(newFlashcard.Id);
+        newFlashcard.StackId = _stackService.GetStackId();
 
         newFlashcard.Question = AnsiConsole.Ask<string>("What is your question? ");
 
