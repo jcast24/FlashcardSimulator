@@ -11,7 +11,7 @@ public class StudySessionService
     private readonly DataAccess _dataAccess;
     private readonly StackService _stackService;
     private readonly FlashcardService _flashcardService;
-    
+
     // Create a new study session
     public StudySessionService(
         StackService stackService,
@@ -26,7 +26,9 @@ public class StudySessionService
 
     internal void CreateNewStudySession()
     {
-        var stackId = _stackService.ChooseStackById();
+
+        // need to look into this, changed from ChooseStackById to GetStackId
+        var stackId = _stackService.GetStackId();
         // var flashcardId = _flashcardService.GetFlashcardById();
         var flashcards = _flashcardService.GetAllFlashcards();
 
@@ -117,7 +119,7 @@ public class StudySessionService
         var studySessions = GetAllStudySessions();
 
         var table = new Table();
-        
+
         table.AddColumns(colNames);
         foreach (var session in studySessions)
         {
@@ -136,7 +138,7 @@ public class StudySessionService
         table.Title("[underline green]Study Sessions![/]");
         table.Centered();
         AnsiConsole.Write(table);
-        
+
         AnsiConsole.WriteLine("Press any key to continue");
         Console.ReadKey();
     }
@@ -144,10 +146,49 @@ public class StudySessionService
     // delete study session
     internal void DeleteStudySession()
     {
-        using var connection = new SqlConnection(_dataAccess.GetConnection());
-        var deleteId = AnsiConsole.Ask<int>("Which session would you like to delete? ");
-        var deleteQuery = "DELETE FROM StudySessions WHERE Id=@Id";
-        connection.Execute(deleteQuery, new { Id = deleteId });
-        AnsiConsole.MarkupLine("[green] Successfully deleted item! [/]");
+        try
+        {
+            Console.Clear();
+            using var connection = new SqlConnection(_dataAccess.GetConnection());
+
+            var dbCount = "SELECT COUNT(*) FROM StudySessions";
+            var count = connection.ExecuteScalar<int>(dbCount);
+
+            if (count == 0)
+            {
+                var reseedQuery = "DBCC CHECKIDENT('StudySessions', RESEED,0)";
+                connection.Execute(reseedQuery);
+                AnsiConsole.MarkupLine("[red]There are no stacks to delete.[/]");
+            }
+            else
+            {
+                ShowAllStudySessions();
+                bool validId = false;
+                while (!validId)
+                {
+                    var id = AnsiConsole.Ask<int>("Enter the id of the session you would like to delete: ");
+                    string checkQuery = "SELECT COUNT(*) FROM StudySessions WHERE Id = @Id";
+                    bool idExists = connection.ExecuteScalar<bool>(checkQuery, new { Id = id });
+
+                    if (idExists)
+                    {
+                        var deleteId = AnsiConsole.Ask<int>("Which session would you like to delete? ");
+                        var deleteQuery = "DELETE FROM StudySessions WHERE Id=@Id";
+                        connection.Execute(deleteQuery, new { Id = deleteId });
+                        AnsiConsole.MarkupLine("[green] Successfully deleted item! [/]");
+                        validId = true;
+                    }
+                    else
+                    {
+                        AnsiConsole.MarkupLine("[red]Item does not exist[/]");
+                    }
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            AnsiConsole.MarkupLine($"DeleteStudySession error: {e.Message}");
+        }
+
     }
 }
