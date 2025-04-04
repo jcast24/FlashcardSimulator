@@ -48,21 +48,27 @@ public class StackService
 
     internal void CreateNewStack()
     {
-        Stack newStack = new Stack();
-
-        var name = AnsiConsole.Ask<string>("What is the name of the new stack?");
-
-        while (string.IsNullOrEmpty(name))
-        {
-            name = AnsiConsole.Ask<string>("Stack name can't be empty, please try again: ");
-        }
-
-        newStack.Name = name;
-
         try
         {
             using var connection = new SqlConnection(_dataAccess.GetConnection());
-            connection.Open();
+            var dbCount = "SELECT COUNT(*) FROM Stacks";
+            var count = connection.ExecuteScalar<int>(dbCount);
+
+            if (count == 0)
+            {
+                var reseedQuery = "DBCC CHECKIDENT('Stacks', RESEED, 0)";
+                connection.Execute(reseedQuery);
+            }
+            Stack newStack = new Stack();
+
+            var name = AnsiConsole.Ask<string>("What is the name of the new stack?");
+
+            while (string.IsNullOrEmpty(name))
+            {
+                name = AnsiConsole.Ask<string>("Stack name can't be empty, please try again: ");
+            }
+
+            newStack.Name = name;
             string insertQuery = @"INSERT INTO Stacks(Name) VALUES (@Name)";
             connection.Execute(insertQuery, new { newStack.Name });
             AnsiConsole.MarkupLine("[green]Successfully created[/]");
