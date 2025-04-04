@@ -1,4 +1,5 @@
-﻿using Dapper;
+﻿using System.Data;
+using Dapper;
 using FlashcardSimulator.Models;
 using Microsoft.Data.SqlClient;
 using Spectre.Console;
@@ -34,11 +35,20 @@ public class StackService
 
     internal void ShowAllStacks()
     {
+        string[] colNames = ["Stack Id", "Name"];
         var stacks = GetAllStacks();
+
+        var table = new Table();
+
+        table.AddColumns(colNames);
         foreach (var stack in stacks)
         {
-            Console.WriteLine($"Stack ID: {stack.Id}\nName: {stack.Name}\n");
+            table.AddRow(stack.Id.ToString(), stack.Name);
         }
+        table.Border(TableBorder.Rounded);
+        table.Title("[underline green]Stacks[/]");
+        table.Centered();
+        AnsiConsole.Write(table);
 
         if (!stacks.Any())
         {
